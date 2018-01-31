@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1517355988242.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "3A9AC9D9",
+    "lastKnownWriteTime" : 7308604914264011873,
+    "last_content_update" : 1517355988242,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "6A484519",
+        "caption" : "tweets_ercot",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=tweets_ercot&cache_key=6A484519",
+        "displayedObservations" : 64,
+        "environment" : "",
+        "object" : "tweets_ercot",
+        "preview" : 0,
+        "totalObservations" : 64,
+        "variables" : 42
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

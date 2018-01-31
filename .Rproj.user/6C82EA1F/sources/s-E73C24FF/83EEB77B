@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1517355262324.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3646176379",
+    "id" : "83EEB77B",
+    "lastKnownWriteTime" : 1517356420,
+    "last_content_update" : 1517356420101,
+    "path" : "O:/_other/projects/tetweets/R/01-download-iso-v01.R",
+    "project_path" : "R/01-download-iso-v01.R",
+    "properties" : {
+        "cursorPosition" : "34,11",
+        "scrollLine" : "7"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
