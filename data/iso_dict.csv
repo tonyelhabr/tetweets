@@ -1,6 +1,0 @@
-screen_name,abbrv,color_ercot,color_company,iso_order,name
-California_ISO,CAISO,#5B6770,,2,CAISO
-ERCOT_ISO,ERCOT,#00AEC7,#00AEC7,1,ERCOT
-miso_energy,MISO,#26D07C,,3,MISO
-NewYorkISO,NYISO,#003865,#6dc2e9,4,NYISO
-pjminterconnect,PJM,#685BC7,#99b3e6,5,PJM
