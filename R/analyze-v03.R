@@ -1,6 +1,11 @@
 #' ---
-#' title: "Analysis"
-#' output: html_document
+#' output:
+#'   html_document:
+#'     toc: false
+#'     fig_width: 8
+#'     fig_height: 8
+#' author: ""
+#' date: "`r format(Sys.Date())`"
 #' params:
 #'   filepath_tweets: NULL
 #'   names: NULL
@@ -13,7 +18,6 @@
 #'   screen_names: NULL
 #'   tweets_min_download: 1000
 #'   num_main_max: 6
-#'   pal_main: NULL
 #'   color_main: NULL
 #'   colors_main: NULL
 #'   tweet_cnt_min: 1000
@@ -25,12 +29,19 @@
 #'   hh_cnt_min: 2
 #'   kinds_features: c("hashtag", "link")
 #'   kinds_types: c("quote", "reply", "rt")
+#'   report_title: "Analysis of Tweets"
+#' title: "`r params$report_title`"
 #' ---
 #'
-#+ global_setups
+#+ global_setup
 knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
-knitr::opts_chunk$set(out.width = 10, out.height = 10)
 
+# knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
+# #' title: "`r params$report_title`"
+# #' date: "`r format(Sys.Date(), "%Y-%m-%d")`"
+# #'     css: www/markdown7.css
+
+#+ global_setup_2
 library("dplyr")
 library("stringr")
 library("ggplot2")
@@ -50,14 +61,31 @@ filepaths_function <- list.files(pattern = "function", recursive = TRUE)
 filepaths_function <- normalizePath(filepaths_function, winslash = "/")
 sapply(filepaths_function, source, .GlobalEnv)
 
+# # ~~TODO: Embed CSS in report.~~
+# ```{css setup_css_direct}
+# h1 {
+#   font-size: 10px;
+# }
+# ```
 #'
 #+ validate_params
-paramss_proc <- validate_params(params)
+params_proc <- validate_params(params)
 
 #'
 #+ process_params
 
-params_proc <- process_params(paramss_proc)
+params_proc <- process_params(params_proc)
+
+#'
+#+ names_grid
+names_distinct <- params_proc$names_main
+names_grid <-
+  bind_cols(x = names_distinct, y = names_distinct) %>%
+  tidyr::complete(x, y) %>%
+  filter(x != y) %>%
+  mutate(xy = paste0(x, "_", y)) %>%
+  mutate(i = row_number())
+xy_names <- names_grid %>% pull(xy)
 
 #'
 #+ clean_tweets
@@ -78,14 +106,22 @@ tweet_timefilter <- compute_tweet_timefilter(tweets)
 #'
 #+ trim_tweets_bytime
 if(params_proc$trim_time) {
-  date_start <- tweet_timefilter$data_start
-  date_end <- tweet_timefilter$data_start
+  date_start <- tweet_timefilter$date_start
+  date_end <- tweet_timefilter$date_end
 } else {
   date_start <- -Inf
   date_end <- Inf
 }
 tweets <- tweets %>% trim_tweets_bytime(start = date_start, end = date_end)
-
+max(tweets$created_at)
+#'
+#' # Report "Meta-Data".
+#'
+#' Total number of tweets: `r format(nrow(tweets), big.mark = ",")`.
+#'
+#' First tweet: `r min(tweets$created_at)`.
+#'
+#' Last tweet: `r max(tweets$created_at)`.
 #'
 #' # Tweet Volume
 #'
@@ -206,7 +242,7 @@ viz_byname_bytype <-
   tweets_byname_bykind_summary_tidy %>%
   filter(kind %in% params_proc$kinds_types) %>%
   mutate(kind = str_to_title(kind)) %>%
-  visualize_byname_bykind(geom = "col", colors = params_proc$colors_main, lab_subtitle = "By Types")
+  visualize_byname_bykind(geom = "lollipop", colors = params_proc$colors_main, lab_kind = "By Types")
 
 #'
 #+ viz_byname_bytype_show, eval = (length(params_proc$kinds_types) > 0), results = "asis", fig.show = "asis"
@@ -217,35 +253,11 @@ viz_byname_byfeature <-
   tweets_byname_bykind_summary_tidy %>%
   filter(kind %in% params_proc$kinds_features) %>%
   mutate(kind = str_to_title(kind)) %>%
-  visualize_byname_bykind(geom = "col", colors = params_proc$colors_main, lab_subtitle = "By Features")
+  visualize_byname_bykind(geom = "lollipop", colors = params_proc$colors_main, lab_kind = "By Features")
 
 #'
 #+ viz_byname_byfeature_show, eval = (length(params_proc$kinds_features) > 0), results = "asis", fig.show = "asis"
 viz_byname_byfeature
-
-#'
-#+ viz_byname_bytype_temporal_create, eval = (min(tweet_timefilter$data$dd_elapsed) >= params_proc$dd_cnt_min)
-# Inspired by https://juliasilge.com/blog/ten-thousand-tweets/ here.
-# viz_byname_bytype_temporal <-
-#   tweets %>%
-#   ggplot(aes(x = timestamp, fill = type)) +
-#   geom_histogram(position = "fill", bins = 30) +
-#   scale_y_continuous(labels = scales::percent_format()) +
-#   scale_fill_manual(values = viridis::viridis(n = length(params_proc$kinds_types) + 1)) +
-#   facet_wrap( ~ name,
-#               ncol = 1,
-#               scales = "free",
-#               strip.position = "right") +
-#   labs(x = NULL, y = NULL) +
-#   labs(title = "Distribution of Tweets by Type Over Time") +
-#   temisc::theme_te_b_facet() +
-#   theme(panel.grid.major.x = element_blank()) +
-#   theme(legend.position = "bottom", legend.title = element_blank())
-# # viz_byname_bytype_temporal
-
-#'
-#+ viz_byname_bytype_temporal_show, eval = (min(tweet_timefilter$data$dd_elapsed) >= params_proc$dd_cnt_min), results = "asis", fig.show = "asis"
-# viz_byname_bytype_temporal
 
 #'
 #' # Tweet Content
@@ -353,15 +365,18 @@ num_par_row <- ceiling(length(params_proc$names_main) / 3)
 num_par_col <- min(length(params_proc$names_main), 3)
 
 #'
-#+  viz_unigrams_byname_freqs_wordcloud_show, fig.show = "asis", out.width = 10, out.height = 10
-# par(mfrow = c(num_par_row, num_par_col))
-# lapply(
-#   params_proc$names_main,
-#   visualize_ngrams_byname_freqs_wordcloud,
-#   data = unigrams_byname_freqs,
-#   colors = params_proc$colors_main
-# )
-# par(mfrow = c(1, 1))
+#+  viz_unigrams_byname_freqs_wordcloud_show, fig.show = "asis"
+par(mfrow = c(num_par_row, num_par_col))
+purrr::map2(
+  params_proc$names_main,
+  params_proc$colors_main,
+  ~visualize_ngrams_byname_freqs_wordcloud(
+    data = unigrams_byname_freqs,
+    name_filter = .x,
+    color = .y
+  )
+)
+par(mfrow = c(1, 1))
 
 
 #'
@@ -400,32 +415,27 @@ viz_bigrams_byname_freqs
 #'
 #+  viz_bigrams_byname_freqs_wordcloud_show, fig.show = "asis"
 par(mfrow = c(num_par_row, num_par_col))
-lapply(
+purrr::map2(
   params_proc$names_main,
-  visualize_ngrams_byname_freqs_wordcloud,
-  data = bigrams_byname_freqs %>% rename(word = bigram),
-  colors = params_proc$colors_main
+  params_proc$colors_main,
+  ~visualize_ngrams_byname_freqs_wordcloud(
+    data = bigrams_byname_freqs %>% rename(word = bigram),
+    name_filter = .x,
+    color = .y
+  )
 )
 par(mfrow = c(1, 1))
 
 #'
 #' Which words are most likely to be used by one name compared to the other?
 #'
-#'
-#+ names_grid
-names_distinct <- params_proc$names_main
-names_grid <-
-  bind_cols(x = names_distinct, y = names_distinct) %>%
-  tidyr::complete(x, y) %>%
-  filter(x != y) %>%
-  mutate(xy = paste0(x, "_", y)) %>%
-  mutate(i = row_number())
-xy_names <- names_grid %>% pull(xy)
+
 
 #'
 #+ ngrams_freqs_wide
 unigrams_freqs_wide <-
-  wrapper_func(names = xy_names,
+  wrapper_func(grid = names_grid,
+               names = xy_names,
                data = unigrams_byname_freqs,
                func = compute_unigrams_freqs)
 #'
@@ -460,7 +470,8 @@ viz_unigrams_freqs
 # TODO: Not workiing when called by render_proj_io?
 # ngrams_ratios_wide ----
 unigrams_ratios_wide <-
-  wrapper_func(names = xy_names,
+  wrapper_func(grid = names_grid,
+               names = xy_names,
                data = tweets_tidy_unigrams,
                func = compute_logratio)
 
@@ -589,7 +600,8 @@ sents_bing_byname <-
 #'
 #+ sents_diffs_poisson
 sents_bing_diffs_poisson <-
-  wrapper_func(names = xy_names,
+  wrapper_func(grid = names_grid,
+               names = xy_names,
                data = sents_bing_byname,
                func = compute_sentdiffs_poisson)
 

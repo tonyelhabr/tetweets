@@ -1,9 +1,5 @@
 
-
-
-# Based on https://github.com/yihui/twitter-blogdown/blob/master/R/fetch.R.
-
-# Setup. ----
+#  Setup. ----
 topic <- "nba"
 yyyymmdd <- strftime(Sys.Date(), "%Y-%m-%d")
 timestamp_scrape <- strftime(Sys.time(), "%Y-%m-%d@%H-%M-%S")
@@ -54,6 +50,7 @@ filepath_dict <- get_filepath(filename_dict, dir_dict, ext_dict)
 filepath_dict_backup <-
   get_filepath(filename_dict_backup, dir_dict, ext_dict)
 
+
 filepath_out_existing <-
   get_filepath(filename_out_existing, dir_out, ext_out_existing)
 filepath_out <- get_filepath(filename_out, dir_out, ext_out)
@@ -67,7 +64,22 @@ sec_sleep <- 1
 # geocode_usa <- "44.467186,-73.214804,2500km"
 geocode_usa <- rtweet::lookup_coords("usa")
 
-dict <- read.csv(filepath_dict_existing, stringsAsFactors = FALSE)
+
+# Data import. ----
+filepath_db_nba <- "O:/_other/projects/nba/data/db_nba.xlsm"
+ws_tms <- "nba_tms"
+tms_nba <-
+  filepath_db_nba %>%
+  readxl::read_excel(sheet = ws_tms) %>%
+  janitor::clean_names() %>%
+  filter(status == 1)
+
+dict_names <-
+  tms_nba %>%
+  select(query = twitter_query_manual) %>%
+  mutate(query = paste(query, collapse = " OR "))
+# Old...
+# dict <- read.csv(filepath_dict_existing, stringsAsFactors = FALSE)
 dict_backup <- dict
 
 # Loop prep. ----
@@ -75,11 +87,11 @@ num_i <- NROW(dict)
 # num_i <- 23
 out_list <- vector("list", num_i)
 
-i <- 19
-# i <- 11
+i <- 1
+# i <- 23
 while (i <= num_i) {
   query_i <- dict[i, "query"]
-  query_i <- paste(query_i, collapse = " OR ")
+  # query_i <- paste(query_i, collapse = " OR ")
   since_id_i <- dict[i, "since_id"]
   # NOTE: Maybe should be using `max_id` parameters instead of `since_id`?
   out_i <-
@@ -143,11 +155,10 @@ retry <- FALSE
 if (retry) {
   queries <- dict[, "query"]
   rgx_queries <- paste0("(", paste(queries, collapse = ")|("), ")")
-  rgx_retry <- paste0(yyyymmdd, ".*", rgx_queries)
+  rgx_retry <- paste0(rgx_queries)
   filepaths_retry <-
     list.files(pattern = rgx_retry,
-               # pattern = yyyymmdd,
-               path = "data",
+               path = file.path("data", yyyymmdd),
                full.names = TRUE,
     )
   # cat(sort(filepaths_retry), sep = "\n")
@@ -161,15 +172,14 @@ if (retry) {
   # unlink(filepaths_retry)
 }
 
-
 # NOTE: Do this if successful with retrieving tweets for all queries in one session.
 success <- FALSE
 if (success) {
-  if (file.exist(filepath_out)) {
+  if (file.exists(filepath_out)) {
     out <- rtweet::read_twitter_csv(filepath_out)
   }
   if (file.exists(filepath_out_existing)) {
-    out_existing <- rtweet::read_twitter_csv(filepath_out_existing)
+    out_existing <- readRDS(filepath_out_existing)
     out_new <- do_call_rbind(list(out_existing, out))
 
     out_new <- out_new[!duplicated(out_new$status_id),]

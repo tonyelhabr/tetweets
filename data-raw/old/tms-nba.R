@@ -7,6 +7,7 @@ readxl::excel_sheets(filepath_db_nba)
 tms_nba <-
   readxl::read_excel(filepath_db_nba, sheet = "nba_tms") %>% janitor::clean_names()
 tms_nbastatr <- nbastatR::get_nba_teams() %>% janitor::clean_names()
+
 tms_nba_proc <-
   tms_nbastatr %>%
   select(
@@ -22,7 +23,7 @@ tms_nba_proc <-
   filter(!is.na(nickname)) %>%
   arrange(tm_name_full)
 tms_nba_proc
-
+readr::write_csv(tms_nba_proc, "a.csv")
 # Could also change "cavaliers" to "cavs"...
 tms_nba_final <-
   tms_nba_proc %>%
