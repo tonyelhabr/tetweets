@@ -1,6 +1,6 @@
 #' ---
 #' output:
-#'   html_document:
+#'   hrbrthemes::ipsum:
 #'     toc: false
 #'     fig_width: 8
 #'     fig_height: 8
@@ -61,12 +61,6 @@ filepaths_function <- list.files(pattern = "function", recursive = TRUE)
 filepaths_function <- normalizePath(filepaths_function, winslash = "/")
 sapply(filepaths_function, source, .GlobalEnv)
 
-# # ~~TODO: Embed CSS in report.~~
-# ```{css setup_css_direct}
-# h1 {
-#   font-size: 10px;
-# }
-# ```
 #'
 #+ validate_params
 params_proc <- validate_params(params)
@@ -80,17 +74,17 @@ params_proc <- process_params(params_proc)
 #+ names_grid
 names_distinct <- params_proc$names_main
 names_grid <-
-  bind_cols(x = names_distinct, y = names_distinct) %>%
-  tidyr::complete(x, y) %>%
-  filter(x != y) %>%
-  mutate(xy = paste0(x, "_", y)) %>%
-  mutate(i = row_number())
+  get_names_grid(params_proc$names_main)
+
 xy_names <- names_grid %>% pull(xy)
 
 #'
 #+ clean_tweets
 # Process. ----
 tweets <- clean_tweets(params_proc$tweets, cols_extra = params_proc$augmented_col)
+
+#'
+# colors
 color_main_inv <- temisc::get_color_hex_inverse(params_proc$color_main)
 colors_dual <- c(params_proc$color_main, color_main_inv)
 # names(colors_dual) <- c(params_proc$name_main, "other")
@@ -113,9 +107,8 @@ if(params_proc$trim_time) {
   date_end <- Inf
 }
 tweets <- tweets %>% trim_tweets_bytime(start = date_start, end = date_end)
-max(tweets$created_at)
+
 #'
-#' # Report "Meta-Data".
 #'
 #' Total number of tweets: `r format(nrow(tweets), big.mark = ",")`.
 #'
@@ -169,7 +162,7 @@ viz_bytime_yyyy
 #+ viz_bytime_mm_create, eval = (min(tweet_timefilter$data$mm_elapsed) >= params_proc$mm_cnt_min)
 viz_bytime_mm <-
   tweets %>%
-  ggplot(aes(x = lubridate::month(timestamp))) %>%
+  ggplot(aes(x = lubridate::month(timestamp, label = TRUE))) %>%
   add_viz_bytime_elements(geom = "bar", colors = params_proc$colors_main, lab_subtitle = "By Month")
 
 #'
@@ -234,7 +227,6 @@ tweets_byname_bykind_summary_tidy <-
   summarize_at(vars(c(cols_summarize)), funs(compute_pct(.))) %>%
   ungroup() %>%
   tidyr::gather(kind, value, -name)
-# tweets_byname_bykind_summary_tidy
 
 #'
 #+ viz_byname_bytype_create, eval = (length(params_proc$kinds_types) > 0)
@@ -303,13 +295,13 @@ viz_byname_chars_cnt
 # library("tidytext")
 tweets_tidy_unigrams <-
   tweets %>%
-  mutate(text = text_plain) %>%
+  mutate(text = rtweet::plain_tweets(text)) %>%
   tidy_tweets_unigrams()
 # tweets_tidy_unigrams %>% select(word, name, status_id) %>% count(word, sort = TRUE)
 
 tweets_tidy_bigrams <-
   tweets %>%
-  mutate(text = text_plain) %>%
+  mutate(text = rtweet::plain_tweets(text)) %>%
   tidy_tweets_bigrams()
 # tweets_tidy_bigrams %>% select(bigram, name, status_id) %>% count(bigram, sort = TRUE)
 
@@ -323,13 +315,13 @@ viz_byname_cnt <-
 viz_byname_cnt
 
 #'
-#+ viz_byname_cnt_byname_create
+#+ viz_byname_cnt_byname_create, eval = (length(params_proc$names_main) > 1)
 viz_byname_cnt_byname <-
   tweets_tidy_unigrams %>%
   visualize_byname_cnt(num_top = 10, facet = TRUE, colors = params_proc$colors_main)
 
 #'
-#+ viz_byname_cnt_byname_show, results = "asis", fig.show = "asis"
+#+ viz_byname_cnt_byname_show, eval = (length(params_proc$names_main) > 1), results = "asis", fig.show = "asis"
 viz_byname_cnt_byname
 
 #'
@@ -466,7 +458,7 @@ viz_unigrams_freqs <-
 viz_unigrams_freqs
 
 #'
-#+ ngrams_ratios_wide
+#+ ngrams_ratios_wide, eval = (length(params_proc$names_main) > 1)
 # TODO: Not workiing when called by render_proj_io?
 # ngrams_ratios_wide ----
 unigrams_ratios_wide <-
@@ -476,7 +468,7 @@ unigrams_ratios_wide <-
                func = compute_logratio)
 
 #'
-#+ viz_ngrams_ratios_create
+#+ viz_ngrams_ratios_create, eval = (length(params_proc$names_main) > 1)
 # TODO: Convert this into a "prepare" function?
 unigrams_ratios_wide_viz <-
   unigrams_ratios_wide %>%
@@ -504,7 +496,7 @@ viz_unigrams_ratios <-
   theme(legend.position = "bottom", legend.title = element_blank())
 
 #'
-#+ ngrams_ratios_show, results = "asis", fig.show = "asis"
+#+ ngrams_ratios_show, eval = (length(params_proc$names_main) > 1), results = "asis", fig.show = "asis"
 viz_unigrams_ratios
 
 #'
@@ -549,7 +541,7 @@ viz_unigrams_byx_corrs
 #'
 #' What is the sentiment (i.e. "tone") of the tweets?
 #'
-#+ sents_byname
+#+ sents_byname, eval = (length(params_proc$names_main) > 1)
 # sents ----
 bing <-
   tidytext::get_sentiments(lexicon = "bing") %>%
@@ -598,7 +590,7 @@ sents_bing_byname <-
 
 
 #'
-#+ sents_diffs_poisson
+#+ sents_diffs_poisson, eval = (length(params_proc$names_main) > 1)
 sents_bing_diffs_poisson <-
   wrapper_func(grid = names_grid,
                names = xy_names,
@@ -608,7 +600,7 @@ sents_bing_diffs_poisson <-
 #'
 #'
 #'
-#+ viz_sents_diffs_poisson_create
+#+ viz_sents_diffs_poisson_create, eval = (length(params_proc$names_main) > 1)
 sents_bing_diffs_poisson_viz <-
   prepare_sents_diffs_poisson(
     sents_bing_diffs_poisson,
@@ -622,11 +614,11 @@ viz_sents_bing_diffs_poisson <-
   )
 
 #'
-#+ viz_sents_diffs_poisson_show, results =  "asis", fig.show = "asis"
+#+ viz_sents_diffs_poisson_show, eval = (length(params_proc$names_main) > 1), results =  "asis", fig.show = "asis"
 viz_sents_bing_diffs_poisson
 
 #'
-#+ viz_sents_ratios_create
+#+ viz_sents_ratios_create, eval = (length(params_proc$names_main) > 1)
 num_top_sents_ratio <- ceiling(12 / length(params_proc$names_main))
 sents_bing_ratios_wide_viz <-
   create_sents_ratios_wide(
@@ -650,7 +642,7 @@ viz_sents_bing_ratios_neg <-
     colors = colors_dual
   )
 #'
-#+ viz_sents_ratios_show, results = "asis", fig.show = "asis"
+#+ viz_sents_ratios_show, eval = (length(params_proc$names_main) > 1), results = "asis", fig.show = "asis"
 viz_sents_bing_ratios_pos
 viz_sents_bing_ratios_neg
 

@@ -66,7 +66,6 @@ process_params <- function(params_input) {
 
     # TODO: Need to validate length of params_input$names vs. screen params_input$names,
     # that name_main is in params_input$names, etc.
-    # browser()
     if (is.null(params_input$names)) {
       if (params_input$augmented) {
         colname <- params_input$augmented_col
@@ -104,11 +103,26 @@ process_params <- function(params_input) {
   out
 }
 
-# `time` is replicated from https://buzzfeednews.github.io/2018-01-trump-twitter-wars/.
+get_names_grid <- function(names) {
+  names_grid <-
+    bind_cols(x = names, y = names) %>%
+    tidyr::complete(x, y)
+  if(length(names) > 1) {
+    names_grid <- names_grid %>% filter(x != y)
+  } else {
+    names_grid <- names_grid %>% mutate(y = paste0(x, "2"))
+  }
+
+  out <-
+    names_grid %>%
+    mutate(xy = paste0(x, "_", y)) %>%
+    mutate(i = row_number())
+  out
+}
+
+# NOTE: `time` column creation is replicated from https://buzzfeednews.github.io/2018-01-trump-twitter-wars/.
 # Other columns are replicated from https://juliasilge.com/blog/ten-thousand-tweets/.
-
-
-# See https://github.com/mkearney/rstudioconf_tweets/blob/master/README.Rmd.
+# NOTE: Also see https://github.com/mkearney/rstudioconf_tweets/blob/master/README.Rmd.
 round_time <- function(x, sec) {
   as.POSIXct(hms::hms(as.numeric(x) %/% sec * sec))
 }
@@ -141,11 +155,11 @@ clean_tweets <-
     out <-
       data %>%
       select(one_of(c(cols_extra, cols_keep))) %>%
+      mutate_if(is.list, funs(as.character)) %>%
       mutate(timestamp = lubridate::ymd_hms(created_at)) %>%
       mutate(timestamp = lubridate::with_tz(timestamp, "America/Chicago")) %>%
-      mutate(time = round_time(timestamp, 60 * 60)) %>%
-      mutate(time = lubridate::hour(timestamp) + lubridate::minute(timestamp) / 60) %>%
-      mutate(text_plain = rtweet::plain_tweets(text))
+      # mutate(time = round_time(timestamp, 60 * 60)) %>%
+      mutate(time = lubridate::hour(timestamp) + lubridate::minute(timestamp) / 60)
 
     out
   }
@@ -346,6 +360,9 @@ get_tweet_rgx_tidiers <-
     )
   }
 
+# NOTE: Make sure nested lists are converted to characters beforehand.
+# Not sure why, but unnest_tokens has trouble even if the "input" parameter is not a list
+# if there is a list elsewhere in the data frame.
 tidy_tweets_unigrams <- function(data, include_rt = FALSE) {
   rgx_tidiers <- get_tweet_rgx_tidiers()
   out <-
@@ -473,11 +490,11 @@ preprocess_xy_data <- function(data, xy_info) {
 }
 
 postprocess_xy_data <- function(data, xy_info) {
-  # browser()
   out <-
     data %>%
     mutate(name_x = xy_info$x, name_y = xy_info$y) %>%
     mutate(name_xy = paste0(name_x, "_", name_y))
+  # browser()
   if (length(setdiff(c(xy_info$x, xy_info$y), names(data))) == 0) {
     out <-
       out %>%
@@ -490,21 +507,14 @@ postprocess_xy_data <- function(data, xy_info) {
   out
 }
 
-compute_unigrams_freqs <- function(data) {
-  out <-
-    data %>%
-    select(name, word, freq) %>%
-    tidyr::spread(name, freq)
-  out
-}
 
 # TODO: Figure out how to use `purrr::map()` here.
 wrapper_func <- function(grid, names, data, func) {
   i <- 1
-  while (i < length(names)) {
+  while (i <= length(names)) {
+    # browser()
     xy_i_info <- filter_xy_names(grid, names, i)
     data_i_preproc <- preprocess_xy_data(data, xy_i_info)
-    # browser()
     data_i_proc <- do.call(func, list(data_i_preproc))
     # browser()
     data_i_postproc <- postprocess_xy_data(data_i_proc, xy_i_info)
@@ -518,6 +528,37 @@ wrapper_func <- function(grid, names, data, func) {
   out
 }
 
+append_dummy_cols <- function(data, num_cols_expect, add = TRUE) {
+  if(ncol(data) < num_cols_expect) {
+    warning(sprintf("Expected %.0f columns but see only %.0f.", num_cols_expect, ncol(data)))
+    num_cols_diff <- num_cols_expect - ncol(data)
+    if(num_cols_diff == 1) {
+      if(add) {
+        # browser()
+        name_last <- names(data)[ncol(data)]
+        out <- bind_cols(data, data[, ncol(data)])
+        names(out)[ncol(out)] <- paste0(name_last, "2")
+        warning(sprintf("Added %.0f dummy column(s).", num_cols_diff))
+      }
+    } else {
+      stop("Don't know how to add dummy columns.")
+    }
+  }
+  out
+}
+
+compute_unigrams_freqs <- function(data) {
+  out <-
+    data %>%
+    select(name, word, freq) %>%
+    tidyr::spread(name, freq)
+  if(ncol(out) == 2) {
+    out <- append_dummy_cols(out, num_cols_expect = 3)
+  }
+  out
+}
+
+
 # NOTE: Filter out replies because they would make up a disproportional share of the
 # top results.
 # NOTE: Modified original code a bit because it doesn't really
@@ -528,6 +569,10 @@ compute_logratio <- function(data) {
     count(word, name) %>%
     filter(n >= 10) %>%
     tidyr::spread(name, n, fill = 0)
+
+  if(ncol(out) == 2) {
+    out <- append_dummy_cols(out, num_cols_expect = 3)
+  }
 
   nms <- names(out)
   out <-
