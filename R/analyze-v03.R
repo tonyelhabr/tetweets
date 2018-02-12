@@ -5,7 +5,6 @@
 #'     fig_width: 8
 #'     fig_height: 8
 #' author: ""
-#' date: "`r format(Sys.Date())`"
 #' params:
 #'   filepath_tweets: NULL
 #'   names: NULL
@@ -22,10 +21,10 @@
 #'   colors_main: NULL
 #'   tweet_cnt_min: 1000
 #'   trim_time: FALSE
-#'   dd_cnt_min: 7
+#'   dd_cnt_min: 1
 #'   yyyy_cnt_min: 1
 #'   mm_cnt_min: 12
-#'   wday_cnt_min: 7
+#'   wday_cnt_min: 6
 #'   hh_cnt_min: 2
 #'   kinds_features: c("hashtag", "link")
 #'   kinds_types: c("quote", "reply", "rt")

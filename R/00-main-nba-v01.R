@@ -4,7 +4,12 @@ library("dplyr")
 library("teproj")
 
 filepath_input <- file.path("R", "analyze-v03.R")
+
+filename_tweets <- "tweets-search-nba"
+ext_tweets <- "rds"
+filepath_tweets_augmented <- file.path("data", "rds")
 filepath_tweets_augmented <- file.path("data", "tweets-search-nba-augmented.rds")
+
 dir_output <- "output"
 yyyymmdd <-  format(Sys.Date(), "%Y-%m-%d")
 
@@ -43,7 +48,7 @@ while(i <= length(div_names)) {
       dd_cnt_min = 1,
       yyyy_cnt_min = 2,
       mm_cnt_min = 12,
-      wday_cnt_min = 7,
+      wday_cnt_min = 5,
       hh_cnt_min = 2,
       download = FALSE,
       download_method = "search",

@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 .httr-oauth
-**/*.csv
-**/*.xlsx
-**/*.rds
+**.csv
+**.xlsx
+**.rds
+**Thumbs.db

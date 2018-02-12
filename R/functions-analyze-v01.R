@@ -343,6 +343,7 @@ visualize_byname_bykind <-
       viz +
       scale_y_continuous(labels = scales::percent_format()) +
       facet_wrap(~ kind, scales = "free") +
+      coord_flip() +
       viz_labs +
       viz_theme
     viz
@@ -438,6 +439,7 @@ visualize_byname_cnt <-
         viz +
         ggalt::geom_lollipop(aes(color = name), size = 2, point.size = 4) +
         scale_color_manual(values = colors) +
+        drlib::scale_x_reordered() +
         facet_wrap(~ name, scales = "free") +
         temisc::theme_te_b_facet() +
         labs(subtitle = "By Name")
@@ -721,8 +723,11 @@ create_sents_ratios_wide <-
   function(sents,
            unigrams_ratios,
            name_filter,
-           num_top = 3) {
+           num_top = 3,
+           uniformize = FALSE) {
 
+    # Do some pre-processing in order to identify if dummy groups will need
+    # to be added later (in the case that there are not enough rows to plot).
     data_proc <-
       unigrams_ratios %>%
       inner_join(sents, by = "word") %>%
@@ -735,9 +740,25 @@ create_sents_ratios_wide <-
       group_by(name_xy, sentiment) %>%
       # group_by(sentiment) %>%
       mutate(rank = row_number(desc(logratio))) %>%
-      filter(rank <= num_top |
-               rank > (max(rank) - num_top)) %>%
+      filter(rank <= num_top) %>%
       ungroup()
+
+    if(uniformize) {
+      rank_minmax <-
+        data_proc %>%
+        group_by(name_xy, sentiment) %>%
+        filter(rank == max(rank)) %>%
+        ungroup() %>%
+        filter(rank == min(rank)) %>%
+        slice(1) %>%
+        pull(rank)
+
+      data_proc <-
+        data_proc %>%
+        group_by(name_xy, sentiment) %>%
+        filter(rank <= rank_minmax) %>%
+        ungroup()
+    }
 
     out <-
       data_proc %>%
