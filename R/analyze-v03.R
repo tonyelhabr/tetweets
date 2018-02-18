@@ -11,7 +11,7 @@
 #'   name_main: NULL
 #'   names_main: NULL
 #'   augmented: TRUE
-#'   augmented_col: "name"
+#'   colname_augmented: "name"
 #'   download: FALSE
 #'   download_method: c("timline", "search")
 #'   screen_names: NULL
@@ -80,7 +80,7 @@ xy_names <- names_grid %>% pull(xy)
 #'
 #+ clean_tweets
 # Process. ----
-tweets <- clean_tweets(params_proc$tweets, cols_extra = params_proc$augmented_col)
+tweets <- clean_tweets(params_proc$tweets, cols_extra = params_proc$colname_augmented)
 
 #'
 # colors

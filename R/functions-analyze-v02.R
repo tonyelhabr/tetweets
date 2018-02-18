@@ -45,23 +45,23 @@ validate_params <- function(params_input) {
 # will be necessary.
 process_params <- function(params_input) {
   if (!is.null(params_input$filepath_tweets)) {
-    tweets <-
+    data <-
       # try(rtweet::read_twitter_csv(params_input$filepath_tweets),
       #     silent = TRUE)
       try(readRDS(params_input$filepath_tweets),
           silent = TRUE)
-    if (inherits(tweets, "try-error")) {
+    if (inherits(data, "try-error")) {
       stop(
         sprintf(
-          "Could not retrieve tweets from `filepath_tweets` %s.",
+          "Could not retrieve data from `filepath_tweets` %s.",
           params_input$filepath_tweets
         ),
         call. = FALSE
       )
     }
 
-    tweets <-
-      tweets %>%
+    data <-
+      data %>%
       filter(name %in% c(params_input$names_main))
 
     # TODO: Need to validate length of params_input$names vs. screen params_input$names,
@@ -73,7 +73,7 @@ process_params <- function(params_input) {
         colname <- "screen_name"
       }
       params_input$names <-
-        tweets %>%
+        data %>%
         distinct(!!rlang::sym(colname)) %>%
         arrange(!!rlang::sym(colname)) %>%
         pull(!!rlang::sym(colname))
@@ -86,19 +86,19 @@ process_params <- function(params_input) {
     }
 
     if (method == "timeline") {
-      tweets <- try(rtweet::get_timelines(params_input$screen_names))
+      data <- try(rtweet::get_timelines(params_input$screen_names))
     } else if (method == "search") {
-      tweets <- try(rtweet::search_tweets(params_input$screen_names))
+      data <- try(rtweet::search_tweets(params_input$screen_names))
     }
-    if (inherits(tweets, "try-error")) {
-      stop(sprintf("Could not download tweets."), call. = FALSE)
+    if (inherits(data, "try-error")) {
+      stop(sprintf("Could not download data."), call. = FALSE)
     }
     params_input$names <- params_input$names
   } else {
     stop("An unexpected combination of inputs was provided.", call. = FALSE)
   }
   out <-
-    c(list(tweets = tweets, names = params_input$names),
+    c(list(data = data, names = params_input$names),
       params_input)
   out
 }
@@ -121,7 +121,7 @@ get_names_grid <- function(names) {
 }
 
 # NOTE: `time` column creation is replicated from https://buzzfeednews.github.io/2018-01-trump-twitter-wars/.
-# Other columns are replicated from https://juliasilge.com/blog/ten-thousand-tweets/.
+# Other columns are replicated from https://juliasilge.com/blog/ten-thousand-data/.
 # NOTE: Also see https://github.com/mkearney/rstudioconf_tweets/blob/master/README.Rmd.
 round_time <- function(x, sec) {
   as.POSIXct(hms::hms(as.numeric(x) %/% sec * sec))
@@ -184,7 +184,7 @@ compute_elapsed_time <- function(date_start, date_end, type) {
   out
 }
 
-compute_tweet_timefilter <-
+compute_data_timefilter <-
   function(data, colnames_group = "name") {
     data_proc <-
       data %>%
@@ -210,9 +210,9 @@ compute_tweet_timefilter <-
     out
   }
 
-# This is "original" processing needed to trim tweets appropriately/dynamically
+# This is "original" processing needed to trim data appropriately/dynamically
 # given an unknown data set.
-trim_tweets_bytime <-
+trim_data_bytime <-
   function(data,
            col_time = "timestamp",
            start = NULL,
@@ -238,7 +238,7 @@ add_viz_bytime_elements <-
       labs(
         x = NULL,
         y = NULL,
-        title = "Count of Tweets Over Time",
+        title = "Count Over Time",
         subtitle = lab_subtitle
       )
     viz_theme <-
@@ -265,7 +265,7 @@ add_viz_bytime_elements <-
     viz
   }
 
-add_tweet_kind_data <- function(data) {
+add_data_kind_data <- function(data) {
   out <-
     data %>%
     mutate(
@@ -308,7 +308,7 @@ visualize_byname_bykind <-
       labs(
         x = NULL,
         y = NULL,
-        title = '% of Tweets of a Certain "Kind"',
+        title = '% of data of a Certain "Kind"',
         subtitle = paste0("By ", lab_kind)
       )
 
@@ -349,7 +349,7 @@ visualize_byname_bykind <-
     viz
   }
 
-get_tweet_rgx_tidiers <-
+get_data_rgx_tidiers <-
   function(rgx_ignore_custom = "^[0-9f][0-9a-f]+$") {
     rgx_unnest <- "([^A-Za-z_\\d#@']|'(?![A-Za-z_\\d#@]))"
     rgx_pattern <-
@@ -364,8 +364,8 @@ get_tweet_rgx_tidiers <-
 # NOTE: Make sure nested lists are converted to characters beforehand.
 # Not sure why, but unnest_tokens has trouble even if the "input" parameter is not a list
 # if there is a list elsewhere in the data frame.
-tidy_tweets_unigrams <- function(data, include_rt = FALSE) {
-  rgx_tidiers <- get_tweet_rgx_tidiers()
+tidy_data_unigrams <- function(data, include_rt = FALSE) {
+  rgx_tidiers <- get_data_rgx_tidiers()
   out <-
     data %>%
     filter(is_retweet == include_rt) %>%
@@ -377,8 +377,8 @@ tidy_tweets_unigrams <- function(data, include_rt = FALSE) {
   out
 }
 
-tidy_tweets_bigrams <- function(data, include_rt = FALSE) {
-  rgx_tidiers <- get_tweet_rgx_tidiers()
+tidy_data_bigrams <- function(data, include_rt = FALSE) {
+  rgx_tidiers <- get_data_rgx_tidiers()
   out <-
     data %>%
     filter(is_retweet == include_rt) %>%
@@ -401,7 +401,7 @@ tidy_tweets_bigrams <- function(data, include_rt = FALSE) {
 }
 
 
-# Inspired by https://github.com/dgrtwo/dgrtwo.github.com/blob/master/_R/2016-08-09-trump-tweets.Rmd here.
+# Inspired by https://github.com/dgrtwo/dgrtwo.github.com/blob/master/_R/2016-08-09-trump-data.Rmd here.
 # TODO: Improve this.
 visualize_byname_cnt <-
   function(data,
@@ -633,7 +633,7 @@ prepare_viz_ngrams_byx_corrs <-
 visualize_ngrams_byx_corrs <-
   function(data,
            col_label = "name",
-           lab_feature = "Tweets",
+           lab_feature = "data",
            seed = 42) {
     set.seed(42)
     viz <-
@@ -653,10 +653,10 @@ visualize_ngrams_byx_corrs <-
 
 summarize_sent_byname <-
   function(sents,
-           tweets,
+           data,
            unigrams) {
     out <-
-      tweets %>%
+      data %>%
       inner_join(sents, by = "word") %>%
       count(status_id, sentiment) %>%
       tidyr::complete(sentiment, status_id, fill = list(n = 0)) %>%

@@ -108,7 +108,7 @@ params_i <-
     name_main = name_main,
     names_main = names_main,
     augmented = TRUE,
-    augmented_col = "name",
+    colname_augmented = "name",
     color_main = color_main,
     colors_main = colors_main,
     tweet_cnt_min = 1000,
