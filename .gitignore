@@ -2,8 +2,4 @@
 .Rhistory
 .RData
 .Ruserdata
-.httr-oauth
-**.csv
-**.xlsx
-**.rds
 **Thumbs.db

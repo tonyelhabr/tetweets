@@ -1,0 +1,31 @@
+name,tm_name_full,tm,city,nickname,nickname_upper,colors,url_thumbnail
+hawks,Atlanta Hawks,ATL,Atlanta,hawks,Hawks,"#e13a3e, #c4d600, #061922",http://stats.nba.com/media/img/teams/logos/ATL_logo.svg
+celtics,Boston Celtics,BOS,Boston,celtics,Celtics,"#008348, #061922, #bb9753",http://stats.nba.com/media/img/teams/logos/BOS_logo.svg
+nets,Brooklyn Nets,BKN,Brooklyn,nets,Nets,"#061922, #061922, #bb9753",http://stats.nba.com/media/img/teams/logos/BKN_logo.svg
+hornets,Charlotte Hornets,CHA,Charlotte,hornets,Hornets,"#1d1160, #008ca8, #a1a1a4",http://stats.nba.com/media/img/teams/logos/CHA_logo.svg
+bulls,Chicago Bulls,CHI,Chicago,bulls,Bulls,"#ce1141, #061922",http://stats.nba.com/media/img/teams/logos/CHI_logo.svg
+cavs,Cleveland Cavaliers,CLE,Cleveland,cavaliers,Cavaliers,"#860038, #fdbb30, #002d62",http://stats.nba.com/media/img/teams/logos/CLE_logo.svg
+mavericks,Dallas Mavericks,DAL,Dallas,mavericks,Mavericks,"#061922, #007dc5, #c4ced3, #061922",http://stats.nba.com/media/img/teams/logos/DAL_logo.svg
+nuggets,Denver Nuggets,DEN,Denver,nuggets,Nuggets,"#4d90cd, #fdb927",http://stats.nba.com/media/img/teams/logos/DEN_logo.svg
+pistons,Detroit Pistons,DET,Detroit,pistons,Pistons,"#006bb6, #ed174c, #0f586c",http://stats.nba.com/media/img/teams/logos/DET_logo.svg
+warriors,Golden State Warriors,GSW,Golden State,warriors,Warriors,"#fdb927, #006bb6",http://stats.nba.com/media/img/teams/logos/GSW_logo.svg
+rockets,Houston Rockets,HOU,Houston,rockets,Rockets,"#ce1141, #c4ced3, #061922",http://stats.nba.com/media/img/teams/logos/HOU_logo.svg
+pacers,Indiana Pacers,IND,Indiana,pacers,Pacers,"#ffc633, #00275d, #bec0c2",http://stats.nba.com/media/img/teams/logos/IND_logo.svg
+clippers,Los Angeles Clippers,LAC,LA,clippers,Clippers,"#ed174c, #006bb6",http://stats.nba.com/media/img/teams/logos/LAC_logo.svg
+lakers,Los Angeles Lakers,LAL,Los Angeles,lakers,Lakers,"#fdb927, #552582",http://stats.nba.com/media/img/teams/logos/LAL_logo.svg
+grizzlies,Memphis Grizzlies,MEM,Memphis,grizzlies,Grizzlies,"#7399c6, #bed4e9, #fdb927",http://stats.nba.com/media/img/teams/logos/MEM_logo.svg
+heat,Miami Heat,MIA,Miami,heat,Heat,"#98002e, #f9a01b",http://stats.nba.com/media/img/teams/logos/MIA_logo.svg
+bucks,Milwaukee Bucks,MIL,Milwaukee,bucks,Bucks,"#00471b, #f0ebd2",http://stats.nba.com/media/img/teams/logos/MIL_logo.svg
+twolves,Minnesota Timberwolves,MIN,Minnesota,timberwolves,Timberwolves,"#005083, #00a94f",http://stats.nba.com/media/img/teams/logos/MIN_logo.svg
+pelicans,New Orleans Pelicans,NOP,New Orleans,pelicans,Pelicans,"#002b5c, #e31837",http://stats.nba.com/media/img/teams/logos/NOP_logo.svg
+knicks,New York Knicks,NYK,New York,knicks,Knicks,"#006bb6, #f58426",http://stats.nba.com/media/img/teams/logos/NYK_logo.svg
+thunder,Oklahoma City Thunder,OKC,Oklahoma City,thunder,Thunder,"#007dc3, #F05133",http://stats.nba.com/media/img/teams/logos/OKC_logo.svg
+magic,Orlando Magic,ORL,Orlando,magic,Magic,"#007dc5, #c4ced3",http://stats.nba.com/media/img/teams/logos/ORL_logo.svg
+sixers,Philadelphia 76ers,PHI,Philadelphia,sixers,76ers,"#ed174c, #006bb6",http://stats.nba.com/media/img/teams/logos/PHI_logo.svg
+suns,Phoenix Suns,PHX,Phoenix,suns,Suns,"#e56020, #1d1160",http://stats.nba.com/media/img/teams/logos/PHX_logo.svg
+blazers,Portland Trail Blazers,POR,Portland,blazers,Trail Blazers,"#061922, #e03a3e",http://stats.nba.com/media/img/teams/logos/POR_logo.svg
+kings,Sacramento Kings,SAC,Sacramento,kings,Kings,"#724c9f, #8e9090",http://stats.nba.com/media/img/teams/logos/SAC_logo.svg
+spurs,San Antonio Spurs,SAS,San Antonio,spurs,Spurs,"#061922, #bac3c9",http://stats.nba.com/media/img/teams/logos/SAS_logo.svg
+raptors,Toronto Raptors,TOR,Toronto,raptors,Raptors,"#ce1141, #061922",http://stats.nba.com/media/img/teams/logos/TOR_logo.svg
+jazz,Utah Jazz,UTA,Utah,jazz,Jazz,"#002b5c, #f9a01b",http://stats.nba.com/media/img/teams/logos/UTA_logo.svg
+wizards,Washington Wizards,WAS,Washington,wizards,Wizards,"#002b5c, #e31837",http://stats.nba.com/media/img/teams/logos/WAS_logo.svg

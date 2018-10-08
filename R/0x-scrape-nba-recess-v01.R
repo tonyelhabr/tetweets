@@ -15,9 +15,13 @@ get_filepath <-
     file.path(dir, paste0(filename, ".", ext))
   }
 max_tweets_per_session <- 150000 # 18000
+types_valid <- c("nba-tms", "nba-recess", "nba-manual")
+type <- "nba-recess"
+
 # One-time setup. ----
 one_time <- FALSE
 if (one_time) {
+  if(type == "nbatms") {
   telists <- rtweet::lists_users("TonyElHabr")
   # list_name <- "PhD - Recess"
   list_name <- "NBAteams"
@@ -26,13 +30,16 @@ if (one_time) {
     filter(name == list_name) %>%
     pull(list_id)
   # tweets_list <- rtweet::lists_statuses(list_id, n = 10000)
+  } else if (type == "recess") {
+
+  }
 
   users_dict <- rtweet::lists_members(list_id)
   users <- users_dict %>% pull(screen_name)
 
   dir_dict <- "data-raw"
   # filename_dict <- paste0("recess")
-  filename_dict <- paste0("nbatms")
+  filename_dict <- type
   ext_dict <- "csv"
   filepath_dict <- get_filepath(dir_dict, filename_dict, ext_dict)
   # readr::write_csv(users_dict %>% select(screen_name), filepath_dict)
@@ -64,7 +71,7 @@ filepath_out_existing <-
 
 # Setup session (dict). ----
 dir_dict <- "data-raw"
-filename_dict <- paste0("recess")
+filename_dict <- type
 ext_dict <- "csv"
 filepath_dict <- get_filepath(dir_dict, filename_dict, ext_dict)
 users_dict <- readr::read_csv(filepath_dict)
@@ -113,6 +120,12 @@ if (retrieve) {
     mutate(rn = row_number(screen_name)) %>%
     select(rn, screen_name, created_at, status_id)
   # tweets_byuser
+} else {
+  if(one_time) {
+  tweets_byuser <-
+    users_dict %>%
+    mutate(rn = row_number())
+  }
 }
 
 # Scrape. ----
@@ -122,10 +135,15 @@ if (scrape) {
   while (i <= num_i) {
     # user_i <- users[i]
     user_i <- tweets_byuser %>% filter(rn == i) %>% pull(screen_name)
-    status_id_i <- tweets_byuser %>% filter(rn == i) %>% pull(status_id)
-    # timeline_i <- rtweet::get_timeline(user_i, n = tweets_per_user)
-    # timeline_i <- rtweet::get_timeline(user_i, n = 300)
-    timeline_i <- rtweet::get_timeline(user_i, max_id = status_id_i)
+    if(!one_time) {
+      status_id_i <- tweets_byuser %>% filter(rn == i) %>% pull(status_id)
+      timeline_i <- rtweet::get_timeline(user_i, max_id = status_id_i)
+    } else {
+      # status_id_i <- tweets_byuser %>% filter(rn == i) %>% pull(status_id)
+      # tweets_per_user <- 300
+      timeline_i <- rtweet::get_timeline(user_i, n = tweets_per_user)
+    }
+
     filepath_out_i <-
       get_filepath(dir_out_i,
                    paste0(filename_out_i_base, "-", user_i),
